@@ -11,11 +11,15 @@ class TicketBase(BaseModel):
 class TicketCreate(TicketBase):
     pass
 
-class TicketUpdate(TicketBase):
+class TicketUpdate(BaseModel):
+    subject: Optional[str] = None
+    status: Optional[str] = None
+    priority: Optional[str] = None
     assignee: Optional[str] = None
 
 class Ticket(TicketBase):
     id: int
+    assignee: Optional[str] = None
 
     class Config:
         orm_mode: True

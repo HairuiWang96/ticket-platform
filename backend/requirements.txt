@@ -6,3 +6,4 @@ sqlalchemy
 psycopg2-binary
 temporalio
 fastapi-cors
+pytest

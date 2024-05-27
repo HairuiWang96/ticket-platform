@@ -1,4 +1,3 @@
-// src/components/TicketDetails.tsx
 import * as React from 'react';
 import { useParams, Link } from 'react-router-dom';
 import apiService from '../services/apiService';
@@ -17,16 +16,16 @@ const TicketDetails: React.FC = () => {
     const { id } = useParams<{ id: string }>();
     const [ticket, setTicket] = React.useState<Ticket | null>(null);
 
-    React.useEffect(() => {
-        const fetchTicketDetails = async () => {
-            try {
-                const response = await apiService.get(`/tickets/${id}`);
-                setTicket(response.data);
-            } catch (error) {
-                console.error('Error fetching ticket details:', error);
-            }
-        };
+    const fetchTicketDetails = async () => {
+        try {
+            const response = await apiService.get(`/tickets/${id}`);
+            setTicket(response.data);
+        } catch (error) {
+            console.error('Error fetching ticket details:', error);
+        }
+    };
 
+    React.useEffect(() => {
         fetchTicketDetails();
     }, [id]);
 

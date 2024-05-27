@@ -1,11 +1,14 @@
-from fastapi import FastAPI, HTTPException, Depends
+from fastapi import FastAPI, HTTPException, Depends, Request
 from fastapi.middleware.cors import CORSMiddleware
+import logging
 from typing import List
 from sqlalchemy.orm import Session
 from backend.models import Ticket, Message
 from backend.database import engine, SessionLocal
 from backend.nylas_integration import nylas
 import backend.schemas as schemas
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
 
 app = FastAPI()
 
@@ -32,6 +35,18 @@ def get_db():
         yield db
     finally:
         db.close()
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+# Custom exception handler for validation errors
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    logger.error(f"Validation error: {exc}")
+    return JSONResponse(
+        status_code=422,
+        content={"detail": exc.errors()},
+    )
 
 # Route to fetch messages using Nylas SDK
 @app.get("/messages/")
@@ -62,20 +77,26 @@ async def read_ticket(ticket_id: int, db: Session = Depends(get_db)):
 # Route to update a ticket
 @app.put("/tickets/{ticket_id}/", response_model=schemas.Ticket)
 async def update_ticket(ticket_id: int, ticket: schemas.TicketUpdate, db: Session = Depends(get_db)):
+    logger.info(f"Received update for ticket ID {ticket_id} with data: {ticket}")
     try:
+        logging.info(f"Received request to update ticket with ID {ticket_id}")
+        logging.info(f"Request data: {ticket.dict()}")
+
         ticket_found = db.query(Ticket).filter(Ticket.id == ticket_id).first()
         if not ticket_found:
             raise HTTPException(status_code=404, detail="Ticket not found")
+        
+        # Log information about the ticket being updated
+        logging.info(f"Updating ticket with ID: {ticket_id}. New details: {ticket}")
 
         # Update ticket details
-        ticket_found.status = ticket.status
-        ticket_found.assignee = ticket.assignee
-        ticket_found.priority = ticket.priority
-        db.commit()
-        db.refresh(ticket_found)
+        update_data = ticket.dict(exclude_unset=True)
+        for key, value in update_data.items():
+            setattr(ticket_found, key, value)
 
         return ticket_found
     except Exception as e:
+        logging.error(f"Error updating ticket with ID {ticket_id}: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 # Route to list messages for a given ticket

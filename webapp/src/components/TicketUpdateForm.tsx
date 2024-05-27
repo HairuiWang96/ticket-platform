@@ -1,8 +1,7 @@
-// src/components/TicketUpdateForm.tsx
 import * as React from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Button, TextField, Box } from '@mui/material';
+import { Button, TextField, Box, InputLabel } from '@mui/material';
 import apiService from '../services/apiService';
 
 interface FormData {
@@ -11,7 +10,11 @@ interface FormData {
     priority: string;
 }
 
-const TicketUpdateForm: React.FC = () => {
+interface Props {
+    onTicketUpdated: () => void; // Define the prop for onTicketUpdated function
+}
+
+const TicketUpdateForm: React.FC<Props> = ({ onTicketUpdated }) => {
     const { id } = useParams<{ id: string }>();
     const { register, handleSubmit, setValue } = useForm<FormData>();
     const navigate = useNavigate(); // Use useNavigate hook
@@ -36,6 +39,10 @@ const TicketUpdateForm: React.FC = () => {
         try {
             console.log('data ', data);
             await apiService.put(`/tickets/${id}`, data);
+            // Call the onTicketUpdated function provided by the parent component
+            if (typeof onTicketUpdated === 'function') {
+                onTicketUpdated();
+            }
             // Redirect to ticket details page after updating
             navigate(`/tickets/${id}`); // Use navigate function
         } catch (error) {
@@ -46,9 +53,33 @@ const TicketUpdateForm: React.FC = () => {
     return (
         <Box mt={2}>
             <form onSubmit={handleSubmit(onSubmit)}>
-                <TextField {...register('status')} label='Status' variant='outlined' fullWidth margin='normal' />
-                <TextField {...register('assignee')} label='Assignee' variant='outlined' fullWidth margin='normal' />
-                <TextField {...register('priority')} label='Priority' variant='outlined' fullWidth margin='normal' />
+                <InputLabel>Status</InputLabel>
+                <TextField
+                    {...register('status')}
+                    variant='outlined'
+                    fullWidth
+                    margin='normal'
+                    sx={{ mb: 2 }} // Add margin-bottom to create space between this TextField and the next one
+                />
+
+                <InputLabel>Assignee</InputLabel>
+                <TextField
+                    {...register('assignee')}
+                    variant='outlined'
+                    fullWidth
+                    margin='normal'
+                    sx={{ mb: 2 }} // Add margin-bottom to create space between this TextField and the next one
+                />
+
+                <InputLabel>Priority</InputLabel>
+                <TextField
+                    {...register('priority')}
+                    variant='outlined'
+                    fullWidth
+                    margin='normal'
+                    sx={{ mb: 2 }} // Add margin-bottom to create space between this TextField and the Button
+                />
+
                 <Button type='submit' variant='contained' color='primary'>
                     Update Ticket
                 </Button>
