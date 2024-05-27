@@ -1,0 +1,8 @@
+fastapi
+uvicorn
+nylas
+python-dotenv
+sqlalchemy
+psycopg2-binary
+temporalio
+fastapi-cors

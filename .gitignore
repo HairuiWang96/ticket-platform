@@ -1,1 +1,12 @@
 tmp/
+
+# Ignore .env files within the backend folder
+backend/.env
+
+# Ignore virtual environment directories
+/backend/venv/
+/backend/env/
+
+# Ignore Python bytecode files
+/backend/__pycache__/
+/backend/*.pyc

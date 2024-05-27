@@ -1,35 +1,46 @@
-version: "3"
+version: '3.8'
 
 services:
-  postgres:
-    image: matthieuberger/postgres-multi-db:14-alpine
-    ports:
-      - 5432:5432
-    volumes:
-      - ./tmp/postgres:/var/lib/postgresql/data
-    environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=password
-      - POSTGRES_MULTIPLE_DATABASES=platform
+    postgres:
+        image: matthieuberger/postgres-multi-db:14-alpine
+        ports:
+            - 5432:5432
+        volumes:
+            - ./tmp/postgres:/var/lib/postgresql/data
+        environment:
+            - POSTGRES_USER=postgres
+            - POSTGRES_PASSWORD=password
+            - POSTGRES_MULTIPLE_DATABASES=platform
 
-  temporal:
-    restart: on-failure:3 
-    build:
-      context: ./temporal
-      dockerfile: Dockerfile
-    ports:
-      - 7233:7233
-      - 8233:8233
-    volumes:
-      - ./tmp/teamporal:/usr/temporal/
+    temporal:
+        restart: on-failure:3
+        build:
+            context: ./temporal
+            dockerfile: Dockerfile
+        ports:
+            - 7233:7233
+            - 8233:8233
+        volumes:
+            - ./tmp/teamporal:/usr/temporal/
 
-  # API service
-  # api: ...
+    # API service
+    # api: ...
 
-  # Email worker service
-  # email-worker:...
+    api:
+        build:
+            context: ./backend # Specify the context directory where the Dockerfile is located
+        ports:
+            - 8000:8000 # Adjust the port if needed
+        volumes:
+            - ./backend:/app/backend # Mount the backend directory as a volume
+        depends_on:
+            - postgres # Ensure that PostgreSQL service is started before the API service
+            - temporal # Ensure that Temporal service is started before the API service
+
+    # Email worker service
+    # email-worker:...
 
 networks:
-  default:
-    driver: bridge
-    name: mentium-net
+    default:
+        driver: bridge
+        name: mentium-net

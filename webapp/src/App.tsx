@@ -1,31 +1,27 @@
-import Container from "@mui/material/Container";
-import Typography from "@mui/material/Typography";
-import Box from "@mui/material/Box";
-import Link from "@mui/material/Link";
-import ProTip from "./ProTip";
+import React from 'react';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import Container from '@mui/material/Container';
+import Typography from '@mui/material/Typography';
+import TicketList from './components/TicketList';
+import TicketDetails from './components/TicketDetails'; // Assuming you create a TicketDetails component
+import TicketUpdateForm from './components/TicketUpdateForm'; // Assuming you create a TicketUpdateForm component
 
-function Copyright() {
-  return (
-    <Typography variant="body2" color="text.secondary" align="center">
-      {"Copyright © "}
-      <Link color="inherit" href="https://mui.com/">
-        Your Website
-      </Link>{" "}
-      {new Date().getFullYear()}.
-    </Typography>
-  );
-}
+const App: React.FC = () => {
+    return (
+        <Router>
+            <Container maxWidth='sm'>
+                <Typography variant='h4' component='h1' sx={{ mb: 2 }}>
+                    Ticket Support Platform
+                </Typography>
+                <Routes>
+                    <Route path='/' element={<TicketList />} />
+                    <Route path='/tickets' element={<TicketList />} />
+                    <Route path='/tickets/:id' element={<TicketDetails />} />
+                    <Route path='/tickets/:id/edit' element={<TicketUpdateForm />} />
+                </Routes>
+            </Container>
+        </Router>
+    );
+};
 
-export default function App() {
-  return (
-    <Container maxWidth="sm">
-      <Box sx={{ my: 4 }}>
-        <Typography variant="h4" component="h1" sx={{ mb: 2 }}>
-          Material UI Vite.js example in TypeScript
-        </Typography>
-        <ProTip />
-        <Copyright />
-      </Box>
-    </Container>
-  );
-}
+export default App;
