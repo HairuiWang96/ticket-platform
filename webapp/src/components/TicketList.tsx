@@ -35,7 +35,7 @@ const TicketList: React.FC = () => {
             </div>
             <List>
                 {tickets.map((ticket: any) => (
-                    <ListItem key={ticket.id} component={Link} to={`/tickets/${ticket.id}`} button>
+                    <ListItem key={ticket.id} component={Link} to={`/tickets/${ticket.id}`} button sx={{ marginBottom: 2 }}>
                         <ListItemText primary={ticket.title} secondary={`Status: ${ticket.status}, Assignee: ${ticket.assignee}, Priority: ${ticket.priority}`} />
                     </ListItem>
                 ))}

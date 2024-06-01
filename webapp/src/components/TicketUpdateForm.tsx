@@ -10,11 +10,7 @@ interface FormData {
     priority: string;
 }
 
-interface Props {
-    onTicketUpdated: () => void; // Define the prop for onTicketUpdated function
-}
-
-const TicketUpdateForm: React.FC<Props> = ({ onTicketUpdated }) => {
+const TicketUpdateForm: React.FC = () => {
     const { id } = useParams<{ id: string }>();
     const { register, handleSubmit, setValue } = useForm<FormData>();
     const navigate = useNavigate(); // Use useNavigate hook
@@ -39,10 +35,6 @@ const TicketUpdateForm: React.FC<Props> = ({ onTicketUpdated }) => {
         try {
             console.log('data ', data);
             await apiService.put(`/tickets/${id}`, data);
-            // Call the onTicketUpdated function provided by the parent component
-            if (typeof onTicketUpdated === 'function') {
-                onTicketUpdated();
-            }
             // Redirect to ticket details page after updating
             navigate(`/tickets/${id}`); // Use navigate function
         } catch (error) {

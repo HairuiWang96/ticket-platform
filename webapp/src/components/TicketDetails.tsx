@@ -49,7 +49,10 @@ const TicketDetails: React.FC = () => {
                     <Typography variant='body1'>Description: {ticket.description}</Typography>
                 </Box>
             </Paper>
-            <Box mt={2}>
+            <Box mt={2} display='flex' justifyContent='space-between'>
+                <Button variant='contained' color='primary' component={Link} to={`/tickets/${id}/thread`}>
+                    View Thread
+                </Button>
                 <Button variant='contained' color='primary' component={Link} to={`/tickets/${ticket.id}/edit`}>
                     Edit Ticket
                 </Button>
