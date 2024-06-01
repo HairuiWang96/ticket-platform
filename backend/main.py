@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, Depends, Request
+from fastapi import FastAPI, HTTPException, Depends, Request, Query
 from fastapi.middleware.cors import CORSMiddleware
 import logging
 from typing import List
@@ -67,11 +67,16 @@ async def get_messages():
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-# Route to list all new tickets
+# Route to list all new tickets with filtering
 @app.get("/tickets/", response_model=List[schemas.Ticket])
-async def list_tickets(db: Session = Depends(get_db)):
+async def list_tickets(done: bool = Query(False), db: Session = Depends(get_db)):
     try:
-        tickets = db.query(Ticket).all()
+        if done:
+            # Filter out done tickets
+            tickets = db.query(Ticket).filter(Ticket.status != "Closed").all()
+        else:
+            # Retrieve all tickets
+            tickets = db.query(Ticket).all()
         return tickets
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

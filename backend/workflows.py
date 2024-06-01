@@ -1,9 +1,8 @@
 from temporalio import workflow
-from nylas import API
+from backend.models import Ticket, Message
+from backend.database import SessionLocal
 import os
-
-# Configure Nylas API
-nylas = API(os.getenv('NYLAS_CLIENT_ID'), os.getenv('NYLAS_CLIENT_SECRET'), os.getenv('NYLAS_ACCESS_TOKEN'))
+from backend.nylas_client import nylas
 
 @workflow.defn
 class EmailFetchWorkflow:
