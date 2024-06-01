@@ -35,3 +35,7 @@ class Message(MessageBase):
 
     class Config:
         orm_mode: True
+
+class EmailResponse(BaseModel):
+    ticket_id: int
+    content: str

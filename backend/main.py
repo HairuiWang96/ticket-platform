@@ -3,14 +3,24 @@ from fastapi.middleware.cors import CORSMiddleware
 import logging
 from typing import List
 from sqlalchemy.orm import Session
+from pydantic import BaseModel
 from backend.models import Ticket, Message
 from backend.database import engine, SessionLocal
 from backend.nylas_integration import nylas
 import backend.schemas as schemas
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
+from backend.nylas_client import nylas
+import os
+
 
 app = FastAPI()
+
+Ticket.metadata.create_all(bind=engine)
+
+class EmailResponse(BaseModel):
+    ticket_id: int
+    content: str
 
 # Set all CORS enabled origins
 origins = [
@@ -124,16 +134,30 @@ async def connect_email(user_id: int, email: str, password: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-if __name__ == "__main__":
-    from temporal.workerfactory import WorkerFactory
-    from temporal.workerfactory import WorkerFactoryOptions
-    from temporal.activity_method import ActivityOptions
 
-    # Create a worker factory
-    factory = WorkerFactory("platform", WorkerFactoryOptions())
+@app.post("/tickets/{ticket_id}/respond")
+def respond_to_email(ticket_id: int, response: schemas.EmailResponse, db: Session = Depends(get_db)):
+    ticket = db.query(Ticket).filter(Ticket.id == ticket_id).first()
+    if not ticket:
+        raise HTTPException(status_code=404, detail="Ticket not found")
 
-    # Register the activity function
-    factory.register_activity(run_email_collection_workflow, "run_email_collection_workflow", ActivityOptions())
+    thread_id = ticket.thread_id
+    try:
+        body = {
+            "subject": "Re: Your Subject",
+            "body": response.content,
+            "reply_to": [{"name": "Name", "email": os.environ.get("EMAIL")}],  # Replace with actual reply-to
+            "to": [{"name": "Recipient Name", "email": "recipient@example.com"}],  # Replace with actual recipient
+            "thread_id": thread_id
+        }
 
-    # Start the Temporal worker to execute activities
-    factory.start()
+        message = nylas.messages.send(request_body=body).data
+
+        # Optionally log the response in your messages table
+        new_message = Message(ticket_id=ticket_id, content=response.content)
+        db.add(new_message)
+        db.commit()
+        return {"status": "sent", "message": message}
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
